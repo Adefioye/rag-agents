@@ -28,7 +28,6 @@ def get_categories():
     try:
         cursor.execute("SELECT category_id, category_name FROM categories")
         categories = cursor.fetchall()
-        close_db_connection(conn, cursor)
         return [{"category_id": category[0], "category_name": category[1]} for category in categories]
     except psycopg2.Error as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
@@ -40,7 +39,6 @@ def create_category(category_data: CategoryCreate):
         cursor.execute("INSERT INTO categories (category_name) VALUES (%s) RETURNING category_id, category_name", (category_data.category_name,))
         category = cursor.fetchone()
         conn.commit()
-        close_db_connection(conn, cursor)
         return {"category_id": category[0], "category_name": category[1]}
     except psycopg2.Error as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
@@ -52,10 +50,8 @@ def delete_category(category_data: CategoryDelete):
         cursor.execute("DELETE FROM categories WHERE category_name = %s RETURNING category_name", (category_data.category_name,))
         deleted_category = cursor.fetchone()
         if not deleted_category:
-            close_db_connection(conn, cursor)
             raise HTTPException(status_code=404, detail="Category not found")
         conn.commit()
-        close_db_connection(conn, cursor)
         return {"message": "Category deleted successfully"}
     except psycopg2.Error as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")

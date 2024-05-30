@@ -36,10 +36,6 @@ class Expense(BaseModel):
     payment_method_id: int
     business_personal: str
 
-# Helper function to close database connection
-def close_db_connection(conn, cursor):
-    cursor.close()
-    conn.close()
 
 # Initialize APIRouter
 router = APIRouter()
@@ -75,8 +71,6 @@ def get_expenses(
         cursor.execute(query, tuple(params))
         expenses = cursor.fetchall()
 
-        close_db_connection(conn, cursor)
-
         if not expenses:
             raise HTTPException(status_code=404, detail="No expenses found for the given filters")
 
@@ -96,7 +90,6 @@ def create_expense(expense_data: ExpenseCreate):
         )
         new_expense = cursor.fetchone()
         conn.commit()
-        close_db_connection(conn, cursor)
         return Expense(transaction_id=new_expense[0], date=new_expense[1], category_id=new_expense[2], description=new_expense[3],
                        amount=new_expense[4], vat=new_expense[5], payment_method_id=new_expense[6], business_personal=new_expense[7])
     except psycopg2.Error as e:
@@ -109,10 +102,8 @@ def delete_expense(expense_data: ExpenseDelete):
         cursor.execute("DELETE FROM expenses WHERE transaction_id = %s RETURNING transaction_id", (expense_data.transaction_id,))
         deleted_expense = cursor.fetchone()
         if not deleted_expense:
-            close_db_connection(conn, cursor)
             raise HTTPException(status_code=404, detail="Expense not found")
         conn.commit()
-        close_db_connection(conn, cursor)
         return {"message": "Expense deleted successfully"}
     except psycopg2.Error as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")

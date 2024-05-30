@@ -17,18 +17,12 @@ class PaymentMethod(BaseModel):
 # Initialize APIRouter
 router = APIRouter()
 
-# Helper function to close database connection
-def close_db_connection(conn, cursor):
-    cursor.close()
-    conn.close()
-
 # GET all payment methods
 @router.get("/payment_methods", response_model=list[PaymentMethod])
 def get_payment_methods():
     try:
         cursor.execute("SELECT payment_method_id, payment_method_name FROM payment_methods")
         payment_methods = cursor.fetchall()
-        close_db_connection(conn, cursor)
         return [{"payment_method_id": method[0], "payment_method_name": method[1]} for method in payment_methods]
     except psycopg2.Error as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
@@ -40,7 +34,6 @@ def create_payment_method(payment_method_data: PaymentMethodCreate):
         cursor.execute("INSERT INTO payment_methods (payment_method_name) VALUES (%s) RETURNING payment_method_id, payment_method_name", (payment_method_data.payment_method_name,))
         method = cursor.fetchone()
         conn.commit()
-        close_db_connection(conn, cursor)
         return {"payment_method_id": method[0], "payment_method_name": method[1]}
     except psycopg2.Error as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
@@ -52,10 +45,8 @@ def delete_payment_method(payment_method_data: PaymentMethodDelete):
         cursor.execute("DELETE FROM payment_methods WHERE payment_method_id = %s RETURNING payment_method_id", (payment_method_data.payment_method_id,))
         deleted_method = cursor.fetchone()
         if not deleted_method:
-            close_db_connection(conn, cursor)
             raise HTTPException(status_code=404, detail="Payment method not found")
         conn.commit()
-        close_db_connection(conn, cursor)
         return {"message": "Payment method deleted successfully"}
     except psycopg2.Error as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
