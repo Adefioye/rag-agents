@@ -21,3 +21,9 @@ uvicorn src.api.run_api:app --reload
 ```
 python src/database/save_categories_and_payment_methods_to_db.py
 ```
+
+
+## Setting up graph state for agent
+- Set up agent state
+- Set up nodes
+- Set up agents
