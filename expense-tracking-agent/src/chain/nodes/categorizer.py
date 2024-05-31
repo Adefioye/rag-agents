@@ -47,8 +47,8 @@ def categorizer(state: AgentState) -> AgentState:
 
     llm = ChatOpenAI(temperature=0, model=categorizer_model_name)
     structured_llm = llm.with_structured_output(Category)
-    text_message = { "type": "text", "text": prompt}
-    messages = HumanMessage(content=[text_message])
+    prompt_message = { "type": "text", "text": prompt}
+    messages = HumanMessage(content=[prompt_message])
     response = structured_llm.invoke([messages])
     selected_category = response.dict().get("category", None)
 
@@ -76,6 +76,6 @@ def categorizer(state: AgentState) -> AgentState:
                 new_state["payment_method_id"] = key 
                 break
     
-    print("New graph state after using categorizer: ", new_state)
+    print("New agent state after using categorizer: ", new_state)
     return new_state
 

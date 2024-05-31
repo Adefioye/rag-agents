@@ -74,6 +74,6 @@ def json_parser(state: AgentState) -> AgentState:
     new_state["business_personal"] = receipt_data.get("business_personal", None)
     new_state["payment_method"] = receipt_data.get("payment_method", None)
 
-    print("New state after updating with receipt data: ", new_state)
+    print("New agent state after updating with receipt data: ", new_state)
 
     return new_state
